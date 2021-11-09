@@ -3,6 +3,10 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 
+const generateRandomString = () => {
+  return (Math.random() * 1e9).toString(36).split(".")[0];
+};
+
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
