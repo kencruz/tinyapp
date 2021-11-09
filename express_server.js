@@ -4,7 +4,7 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 
 const generateRandomString = () => {
-  return (Math.random() * 1e9).toString(36).split(".")[0];
+  return Math.random().toString(36).substring(2, 8);
 };
 
 const urlDatabase = {
@@ -34,6 +34,16 @@ app.post("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
+});
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+
+  if (urlDatabase[shortURL]) {
+    delete urlDatabase[shortURL];
+  }
+  const templateVars = { urls: urlDatabase };
+  res.redirect("/urls");
 });
 
 app.get("/urls/:shortURL", (req, res) => {
