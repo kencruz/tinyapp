@@ -41,13 +41,14 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const newId = generateRandomString();
-  users[newId] = {
-    id: newId,
-    email: req.body.email,
-    password: req.body.password,
+  const { email, password } = req.body;
+  const id = generateRandomString();
+  users[id] = {
+    id,
+    email,
+    password,
   };
-  res.cookie("user_id", newId);
+  res.cookie("user_id", id);
   res.redirect("/urls");
 });
 
