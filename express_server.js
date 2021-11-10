@@ -26,6 +26,15 @@ const users = {
   },
 };
 
+const doesEmailExist = (email, users) => {
+  for (const id in users) {
+    if (users[id].email === email) {
+      return true;
+    }
+  }
+  return false;
+};
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -42,12 +51,21 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) {
+    res.status(400).send("Email and/or password is empty");
+    return;
+  }
+  if (doesEmailExist(email, users)) {
+    res.status(400).send("Email already exists.");
+    return;
+  }
   const id = generateRandomString();
   users[id] = {
     id,
     email,
     password,
   };
+  console.log(users);
   res.cookie("user_id", id);
   res.redirect("/urls");
 });
