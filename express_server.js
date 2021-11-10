@@ -22,6 +22,11 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+app.get("/register", (req, res) => {
+  const templateVars = { username: req.cookies["username"] };
+  res.render("registration", templateVars);
+});
+
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
 
