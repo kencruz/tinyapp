@@ -29,7 +29,7 @@ const users = {
 const doesEmailExist = (email, users) => {
   for (const id in users) {
     if (users[id].email === email) {
-      return true;
+      return users[id];
     }
   }
   return false;
@@ -70,15 +70,28 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
-app.get("/login", (req, res) => {
-  const templateVars = { user: req.cookies["user_id"] };
-  res.render("login", templateVars);
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    res.status(400).send("Email and/or password is empty");
+    return;
+  }
+  const user = doesEmailExist(email, users);
+  if (!user) {
+    res.status(403).send("Email not found.");
+    return;
+  }
+  if (user.password !== password) {
+    res.status(403).send("Invalid password.");
+    return;
+  }
+  res.cookie("user_id", user.id);
+  res.redirect("/urls");
 });
 
-app.post("/login", (req, res) => {
-  console.log(req.body);
-
-  res.redirect("/urls");
+app.get("/login", (req, res) => {
+  const templateVars = { user: users[req.cookies["user_id"]] };
+  res.render("login", templateVars);
 });
 
 app.post("/logout", (req, res) => {
