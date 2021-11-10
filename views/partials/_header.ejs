@@ -16,14 +16,9 @@
             <label class="mr-2" for="username">Logged in as: <%= user.email %></label>
             <button type="submit" class="btn btn-outline-dark">Logout</button>
           </div>
-        </form>
         <% } else { %>
-        <form class="form-inline" action="/login" method="POST">
-          <div class="form-group">
-            <input style="margin: 0" class="form-control mr-2" type="text" name="username" placeholder="Username" style="width: 300px; margin: 1em">
-            <button type="submit" class="btn btn-outline-dark">Login</button>
-          </div>
-        </form>
+          <a class="nav-item nav-link" href="/register">Sign up</a>
+          <a class="nav-item nav-link" href="/login">Log in</a>
         <% } %>
       </div>
     </div>

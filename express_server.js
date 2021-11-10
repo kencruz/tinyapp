@@ -70,8 +70,13 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
+app.get("/login", (req, res) => {
+  const templateVars = { user: req.cookies["user_id"] };
+  res.render("login", templateVars);
+});
+
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  console.log(req.body);
 
   res.redirect("/urls");
 });
