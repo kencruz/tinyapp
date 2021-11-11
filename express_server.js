@@ -37,13 +37,14 @@ const users = {
   },
 };
 
-const doesEmailExist = (email, users) => {
-  for (const id in users) {
-    if (users[id].email === email) {
-      return users[id];
+const getUserByEmail = (email, database) => {
+  let user = null;
+  for (const id in database) {
+    if (database[id].email === email) {
+      user = database[id];
     }
   }
-  return false;
+  return user;
 };
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -69,7 +70,7 @@ app.post("/register", (req, res) => {
     res.status(400).send("Email and/or password is empty");
     return;
   }
-  if (doesEmailExist(email, users)) {
+  if (getUserByEmail(email, users)) {
     res.status(400).send("Email already exists.");
     return;
   }
@@ -90,7 +91,7 @@ app.post("/login", (req, res) => {
     res.status(400).send("Email and/or password is empty");
     return;
   }
-  const user = doesEmailExist(email, users);
+  const user = getUserByEmail(email, users);
   if (!user) {
     res.status(403).send("Email not found.");
     return;
