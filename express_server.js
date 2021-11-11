@@ -47,7 +47,11 @@ app.use(cookieSession({
 app.set("view engine", "ejs");
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if (users[req.session.user_id]) {
+    res.redirect("/urls");
+    return;
+  }
+  res.redirect("/login");
 });
 
 app.get("/register", (req, res) => {
