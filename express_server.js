@@ -48,26 +48,25 @@ app.set("view engine", "ejs");
 
 app.get("/", (req, res) => {
   if (users[req.session.user_id]) {
-    res.redirect("/urls");
-    return;
+    return res.redirect("/urls");
   }
-  res.redirect("/login");
+  return res.redirect("/login");
 });
 
 app.get("/register", (req, res) => {
   const templateVars = { user: users[req.session.user_id] };
-  res.render("registration", templateVars);
+  return res.render("registration", templateVars);
 });
 
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res.status(400).send("Email and/or password is empty");
-    return;
+    return res.status(400).send("Email and/or password is empty");
+    
   }
   if (getUserByEmail(email, users)) {
-    res.status(400).send("Email already exists.");
-    return;
+    return res.status(400).send("Email already exists.");
+    
   }
   const id = generateRandomString();
   users[id] = {
@@ -77,52 +76,52 @@ app.post("/register", (req, res) => {
   };
   console.log(users);
   req.session.user_id = id;
-  res.redirect("/urls");
+  return res.redirect("/urls");
 });
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res.status(400).send("Email and/or password is empty");
-    return;
+    return res.status(400).send("Email and/or password is empty");
+    
   }
   const user = getUserByEmail(email, users);
   if (!user) {
-    res.status(403).send("Email not found.");
-    return;
+    return res.status(403).send("Email not found.");
+    
   }
   if (!bcrypt.compareSync(password, user.password)) {
-    res.status(403).send("Invalid password.");
-    return;
+    return res.status(403).send("Invalid password.");
+    
   }
   req.session.user_id = user.id;
-  res.redirect("/urls");
+  return res.redirect("/urls");
 });
 
 app.get("/login", (req, res) => {
   const templateVars = { user: users[req.session.user_id] };
-  res.render("login", templateVars);
+  return res.render("login", templateVars);
 });
 
 app.post("/logout", (req, res) => {
   console.log("logging out");
   req.session = null;
-  res.redirect("/urls");
+  return res.redirect("/urls");
 });
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[req.session.user_id] };
   if (!req.session.user_id) {
-    res.redirect("/login");
-    return;
+    return res.redirect("/login");
+    
   }
-  res.render("urls_new", templateVars);
+  return res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
   if (!users[req.session.user_id]) {
-    res.status(403).send("Error: Unauthorized user can't add a url link.");
-    return;
+    return res.status(403).send("Error: Unauthorized user can't add a url link.");
+    
   }
   console.log("new url post", req.post);
   const shortURL = generateRandomString();
@@ -130,7 +129,7 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userID: req.session.user_id,
   };
-  res.redirect(`/urls/${shortURL}`);
+  return res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/urls", (req, res) => {
@@ -139,78 +138,77 @@ app.get("/urls", (req, res) => {
     urls: urlsForUser(userID),
     user: users[userID],
   };
-  res.render("urls_index", templateVars);
+  return res.render("urls_index", templateVars);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const [shortURL, userID] = [req.params.shortURL, req.session.user_id];
   if (!urlDatabase[shortURL]) {
-    res.status(404).send("shortURL not found.");
-    return;
+    return res.status(404).send("shortURL not found.");
+    
   }
   if (urlDatabase[shortURL].userID !== userID) {
-    res.status(403).send("Error: Unauthorized user can't delete a link.");
-    return;
+    return res.status(403).send("Error: Unauthorized user can't delete a link.");
+    
   }
   if (urlDatabase[shortURL]) {
     delete urlDatabase[shortURL];
   }
   const templateVars = { urls: urlDatabase };
-  res.redirect("/urls");
+  return res.redirect("/urls");
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   const [shortURL, user] = [req.params.shortURL, req.session.user_id];
   if (!urlDatabase[shortURL]) {
-    res.status(404).send("shortURL not found.");
-    return;
+    return res.status(404).send("shortURL not found.");
+    
   }
   if (urlDatabase[shortURL].userID !== user) {
-    res.status(403).send("Unauthorized user to access shortURL page.");
-    return;
+    return res.status(403).send("Unauthorized user to access shortURL page.");
+    
   }
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.session.user_id],
   };
-  res.render("urls_show", templateVars);
+  return res.render("urls_show", templateVars);
 });
 
 app.post("/urls/:shortURL", (req, res) => {
   const [shortURL, longURL, user] = [req.params.shortURL, req.body.longURL, req.session.user_id];
   if (!urlDatabase[shortURL]) {
-    res.status(404).send("shortURL not found.");
-    return;
+    return res.status(404).send("shortURL not found.");
+    
   }
   if (urlDatabase[shortURL].userID !== user) {
-    res.status(403).send("Unauthorized user to access shortURL page.");
-    return;
+    return res.status(403).send("Unauthorized user to access shortURL page.");
+    
   }
   if (urlDatabase[shortURL]) {
     urlDatabase[shortURL].longURL = longURL;
   }
-  res.redirect(`/urls/${shortURL}`);
+  return res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
+  return res.json(urlDatabase);
 });
 
 app.get("/u/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
-    res.status(404).send("Short link not found");
+    return res.status(404).send("Short link not found");
   }
   const longURL = urlDatabase[req.params.shortURL].longURL;
   if (longURL) {
-    res.redirect(longURL);
-  } else {
-    res.send("Not found");
+    return res.redirect(longURL);
   }
+  return res.send("Not found");
 });
 
 app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+  return res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.listen(PORT, () => {
