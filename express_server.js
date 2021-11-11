@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const bcrypt = require('bcryptjs');
 
 const generateRandomString = () => {
@@ -48,6 +49,10 @@ const doesEmailExist = (email, users) => {
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['break this plz', 'actually don\'t, be nice'],
+}));
 
 app.set("view engine", "ejs");
 
