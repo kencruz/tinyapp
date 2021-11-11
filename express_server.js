@@ -61,7 +61,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
+  const templateVars = { user: users[req.session.user_id] };
   res.render("registration", templateVars);
 });
 
@@ -82,7 +82,7 @@ app.post("/register", (req, res) => {
     password: bcrypt.hashSync(password, 10),
   };
   console.log(users);
-  res.cookie("user_id", id);
+  req.session.user_id = id;
   res.redirect("/urls");
 });
 
@@ -101,24 +101,24 @@ app.post("/login", (req, res) => {
     res.status(403).send("Invalid password.");
     return;
   }
-  res.cookie("user_id", user.id);
+  req.session.user_id = user.id;
   res.redirect("/urls");
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
+  const templateVars = { user: users[req.session.user_id] };
   res.render("login", templateVars);
 });
 
 app.post("/logout", (req, res) => {
   console.log("logging out");
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/urls");
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
-  if (!req.cookies["user_id"]) {
+  const templateVars = { user: users[req.session.user_id] };
+  if (!req.session.user_id) {
     res.redirect("/login");
     return;
   }
@@ -126,7 +126,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  if (!users[req.cookies["user_id"]]) {
+  if (!users[req.session.user_id]) {
     res.status(403).send("Error: Unauthorized user can't add a url link.");
     return;
   }
@@ -134,13 +134,13 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: req.cookies["user_id"],
+    userID: req.session.user_id,
   };
   res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/urls", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   const templateVars = {
     urls: urlsForUser(userID),
     user: users[userID],
@@ -149,7 +149,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const [shortURL, userID] = [req.params.shortURL, req.cookies["user_id"]];
+  const [shortURL, userID] = [req.params.shortURL, req.session.user_id];
   if (!urlDatabase[shortURL]) {
     res.status(404).send("shortURL not found.");
     return;
@@ -166,7 +166,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const [shortURL, user] = [req.params.shortURL, req.cookies["user_id"]];
+  const [shortURL, user] = [req.params.shortURL, req.session.user_id];
   if (!urlDatabase[shortURL]) {
     res.status(404).send("shortURL not found.");
     return;
@@ -178,13 +178,13 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.user_id],
   };
   res.render("urls_show", templateVars);
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  const [shortURL, longURL, user] = [req.params.shortURL, req.body.longURL, req.cookies["user_id"]];
+  const [shortURL, longURL, user] = [req.params.shortURL, req.body.longURL, req.session.user_id];
   if (!urlDatabase[shortURL]) {
     res.status(404).send("shortURL not found.");
     return;
