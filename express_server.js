@@ -142,8 +142,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const user = users[req.cookies["user_id"]];
+  const [shortURL, user] = [req.params.shortURL, req.cookies["user_id"]];
   if (!urlDatabase[shortURL]) {
     res.status(404).send("shortURL not found.");
     return;
