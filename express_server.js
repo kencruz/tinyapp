@@ -143,8 +143,15 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
-
+  const [shortURL, userID] = [req.params.shortURL, req.cookies["user_id"]];
+  if (!urlDatabase[shortURL]) {
+    res.status(404).send("shortURL not found.");
+    return;
+  }
+  if (urlDatabase[shortURL].userID !== userID) {
+    res.status(403).send("Error: Unauthorized user can't delete a link.");
+    return;
+  }
   if (urlDatabase[shortURL]) {
     delete urlDatabase[shortURL];
   }
@@ -171,7 +178,15 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  const [shortURL, longURL] = [req.params.shortURL, req.body.longURL];
+  const [shortURL, longURL, user] = [req.params.shortURL, req.body.longURL, req.cookies["user_id"]];
+  if (!urlDatabase[shortURL]) {
+    res.status(404).send("shortURL not found.");
+    return;
+  }
+  if (urlDatabase[shortURL].userID !== user) {
+    res.status(403).send("Unauthorized user to access shortURL page.");
+    return;
+  }
   if (urlDatabase[shortURL]) {
     urlDatabase[shortURL].longURL = longURL;
   }
