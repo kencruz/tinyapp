@@ -8,6 +8,16 @@ const generateRandomString = () => {
   return Math.random().toString(36).substring(2, 8);
 };
 
+const urlsForUser = (id) => {
+  const urls = {};
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      urls[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return urls;
+};
+
 const urlDatabase = {
   b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
   "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" },
@@ -124,9 +134,10 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  const userID = req.cookies["user_id"];
   const templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies["user_id"]],
+    urls: urlsForUser(userID),
+    user: users[userID],
   };
   res.render("urls_index", templateVars);
 });
