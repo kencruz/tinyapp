@@ -9,8 +9,8 @@ const generateRandomString = () => {
 };
 
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" },
 };
 
 const users = {
@@ -95,16 +95,9 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
+  console.log("logging out");
   res.clearCookie("user_id");
   res.redirect("/urls");
-});
-
-app.get("/urls", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies["user_id"]],
-  };
-  res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
@@ -114,6 +107,28 @@ app.get("/urls/new", (req, res) => {
     return;
   }
   res.render("urls_new", templateVars);
+});
+
+app.post("/urls", (req, res) => {
+  if (!users[req.cookies["user_id"]]) {
+    res.status(403).send("Error: Unauthorized user can't add a url link.");
+    return;
+  }
+  console.log("new url post", req.post);
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL,
+    userID: req.cookies["user_id"],
+  };
+  res.redirect(`/urls/${shortURL}`);
+});
+
+app.get("/urls", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    user: users[req.cookies["user_id"]],
+  };
+  res.render("urls_index", templateVars);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -129,7 +144,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.cookies["user_id"]],
   };
   res.render("urls_show", templateVars);
@@ -138,18 +153,8 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   const [shortURL, longURL] = [req.params.shortURL, req.body.longURL];
   if (urlDatabase[shortURL]) {
-    urlDatabase[shortURL] = longURL;
+    urlDatabase[shortURL].longURL = longURL;
   }
-  res.redirect(`/urls/${shortURL}`);
-});
-
-app.post("/urls", (req, res) => {
-  if (!users[req.cookies["user_id"]]) {
-    res.status(403).send("Error: Unauthorized user can't add a url link.");
-    return;
-  }
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -158,7 +163,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   if (longURL) {
     res.redirect(longURL);
   } else {
