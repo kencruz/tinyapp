@@ -133,10 +133,13 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const userID = req.session.user_id;
+  const user = users[req.session.user_id];
+  if (!user) {
+    return res.status(403).render('error', {user, error: "Unauthorized user can't access url page."});
+  }
   const templateVars = {
-    urls: urlsForUser(userID),
-    user: users[userID],
+    urls: urlsForUser(user.id),
+    user: user,
   };
   return res.render("urls_index", templateVars);
 });
