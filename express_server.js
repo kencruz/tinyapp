@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcryptjs');
 
 const generateRandomString = () => {
   return Math.random().toString(36).substring(2, 8);
@@ -73,7 +74,7 @@ app.post("/register", (req, res) => {
   users[id] = {
     id,
     email,
-    password,
+    password: bcrypt.hashSync(password, 10),
   };
   console.log(users);
   res.cookie("user_id", id);
