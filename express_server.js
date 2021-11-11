@@ -144,6 +144,10 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  if (!users[req.cookies["user_id"]]) {
+    res.status(403).send("Error: Unauthorized user can't add a url link.");
+    return;
+  }
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
