@@ -145,19 +145,19 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const [shortURL, userID] = [req.params.shortURL, req.session.user_id];
+  const [shortURL, user] = [req.params.shortURL, users[req.session.user_id]];
   if (!urlDatabase[shortURL]) {
-    return res.status(404).send("shortURL not found.");
-    
+    return res.status(404).render('error', {user, error: "shortURL not found"});
   }
-  if (urlDatabase[shortURL].userID !== userID) {
-    return res.status(403).send("Error: Unauthorized user can't delete a link.");
-    
+  if (!user) {
+    return res.status(403).render("error", {user, error: "Can't delete this link. User not logged in."});
+  }
+  if (urlDatabase[shortURL].userID !== user.id) {
+    return res.status(403).render("error", {user, error: "Unauthorized user can't delete this link."});
   }
   if (urlDatabase[shortURL]) {
     delete urlDatabase[shortURL];
   }
-  const templateVars = { urls: urlDatabase };
   return res.redirect("/urls");
 });
 
