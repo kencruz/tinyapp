@@ -110,11 +110,11 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.session.user_id] };
-  if (!req.session.user_id) {
+  const user = users[req.session.user_id];
+  if (!user) {
     return res.redirect("/login");
-    
   }
+  const templateVars = {user};
   return res.render("urls_new", templateVars);
 });
 
