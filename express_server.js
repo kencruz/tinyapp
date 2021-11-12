@@ -99,7 +99,11 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = { user: users[req.session.user_id] };
+  const user = users[req.session.user_id];
+  if (user) {
+    return res.redirect("/urls");
+  }
+  const templateVars = {user};
   return res.render("login", templateVars);
 });
 
@@ -193,7 +197,7 @@ app.post("/urls/:shortURL", (req, res) => {
   if (urlDatabase[shortURL]) {
     urlDatabase[shortURL].longURL = longURL;
   }
-  return res.redirect(`/urls/${shortURL}`);
+  return res.redirect(`/urls/`);
 });
 
 app.get("/urls.json", (req, res) => {
