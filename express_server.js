@@ -119,15 +119,14 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  if (!users[req.session.user_id]) {
-    return res.status(403).send("Error: Unauthorized user can't add a url link.");
-    
+  const user = users[req.session.user_id];
+  if (!user) {
+    return res.status(403).render('error', {user, error: "Unauthorized user can't add a url link."});
   }
-  console.log("new url post", req.post);
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: req.session.user_id,
+    userID: user.id,
   };
   return res.redirect(`/urls/${shortURL}`);
 });
