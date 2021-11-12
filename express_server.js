@@ -202,14 +202,12 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  if (!urlDatabase[req.params.shortURL]) {
-    return res.status(404).send("Short link not found");
+  const shortURL = req.params.shortURL;
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).render("error", {user: null, error: "Short link not found"});
   }
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  if (longURL) {
-    return res.redirect(longURL);
-  }
-  return res.send("Not found");
+  const longURL = urlDatabase[shortURL].longURL;
+  return res.redirect(longURL);
 });
 
 app.get("/hello", (req, res) => {
