@@ -202,9 +202,9 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
+  const [shortURL, user] = [req.params.shortURL, users[req.session.user_id]];
   if (!urlDatabase[shortURL]) {
-    return res.status(404).render("error", {user: null, error: "Short link not found"});
+    return res.status(404).render("error", {user, error: "Short link not found"});
   }
   const longURL = urlDatabase[shortURL].longURL;
   return res.redirect(longURL);
