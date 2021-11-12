@@ -4,28 +4,11 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require('bcryptjs');
+const {users, urlDatabase} = require('./data');
 const {generateRandomString, getUserByEmail, filterUrlByIdGenerator} = require('./helpers');
-
-const urlDatabase = {
-  b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" },
-};
 
 // returns urls owned by given user id
 const urlsForUser = filterUrlByIdGenerator(urlDatabase);
-
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: bcrypt.hashSync("purple-monkey-dinosaur", 10),
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: bcrypt.hashSync("dishwasher-funk", 10),
-  },
-};
 
 // set up middleware to read request body easily
 app.use(bodyParser.urlencoded({ extended: true }));
