@@ -107,7 +107,6 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  console.log("logging out");
   req.session = null;
   return res.redirect("/urls");
 });
@@ -137,7 +136,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls", (req, res) => {
   const user = users[req.session.user_id];
   if (!user) {
-    return res.status(403).render('error', {user, error: "Unauthorized user can't access url page."});
+    return res.status(403).render('error', {user, error: "Log in to view url page."});
   }
   const templateVars = {
     urls: urlsForUser(user.id),
