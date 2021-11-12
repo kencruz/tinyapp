@@ -292,10 +292,6 @@ app.post("/urls/:shortURL", (req, res) => {
   return res.redirect(`/urls/`);
 });
 
-app.get("/urls.json", (req, res) => {
-  return res.json(urlDatabase);
-});
-
 // the endpoint to redirect shortURLs to their longURLs
 app.get("/u/:shortURL", (req, res) => {
   // get shortURL from request body and try to get a valid user id from cookie
@@ -309,10 +305,6 @@ app.get("/u/:shortURL", (req, res) => {
   // once successfully validated, redirect to longURL
   const longURL = urlDatabase[shortURL].longURL;
   return res.redirect(longURL);
-});
-
-app.get("/hello", (req, res) => {
-  return res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.listen(PORT, () => {
