@@ -24,7 +24,7 @@ app.set("view engine", "ejs");
 
 // at the root path redirect to /urls if logged in, else go to login page
 app.get("/", (req, res) => {
-  if (users[req.session.user_id]) {
+  if (users[req.session.userId]) {
     return res.redirect("/urls");
   }
   return res.redirect("/login");
@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 // shows the user registration page
 app.get("/register", (req, res) => {
   // try to get a valid user id from cookie
-  const user = users[req.session.user_id];
+  const user = users[req.session.userId];
 
   // go to user url page if user is already logged in
   if (user) {
@@ -69,7 +69,7 @@ app.post("/register", (req, res) => {
   };
 
   // user id is sent as an encrypted cookie and redirect to user's url page
-  req.session.user_id = id;
+  req.session.userId = id;
   return res.redirect("/urls");
 });
 
@@ -92,18 +92,18 @@ app.post("/login", (req, res) => {
   // hashes password hash and compares with the one in the database
   if (!bcrypt.compareSync(password, user.password)) {
     // go to error page if password is invalid
-    return res.status(403).render('error', {user, error: "Invalid password."});
+    return res.status(403).render('error', {user: null, error: "Invalid password."});
   }
 
   // if successfully authenticated, send user id as encrypted cookie and redirect to /url
-  req.session.user_id = user.id;
+  req.session.userId = user.id;
   return res.redirect("/urls");
 });
 
 // show the login page
 app.get("/login", (req, res) => {
   // try to get a valid user id from cookie
-  const user = users[req.session.user_id];
+  const user = users[req.session.userId];
 
   // logged in users will redirect to /url
   if (user) {
@@ -125,7 +125,7 @@ app.post("/logout", (req, res) => {
 // the endpoint to view the form to create a new shortURL
 app.get("/urls/new", (req, res) => {
   // try to get a valid user id from cookie
-  const user = users[req.session.user_id];
+  const user = users[req.session.userId];
 
   // unauthenticated users are redirected to /login
   if (!user) {
@@ -140,7 +140,7 @@ app.get("/urls/new", (req, res) => {
 // the endpoint to create a new shortURL
 app.post("/urls", (req, res) => {
   // try to get a valid user id from cookie
-  const user = users[req.session.user_id];
+  const user = users[req.session.userId];
 
   // unauthenticated users are shown the error page
   if (!user) {
@@ -161,7 +161,7 @@ app.post("/urls", (req, res) => {
 // show a list of urls owned by user
 app.get("/urls", (req, res) => {
   // try to get a valid user id from cookie
-  const user = users[req.session.user_id];
+  const user = users[req.session.userId];
 
   // unauthenticated users are shown the error page
   if (!user) {
@@ -181,7 +181,7 @@ app.get("/urls", (req, res) => {
 // the endpoint to delete a shortURL
 app.post("/urls/:shortURL/delete", (req, res) => {
   // get shortURL from request body and try to get a valid user id from cookie
-  const [shortURL, user] = [req.params.shortURL, users[req.session.user_id]];
+  const [shortURL, user] = [req.params.shortURL, users[req.session.userId]];
   
   // invalid shortURLs are shown the error page
   if (!urlDatabase[shortURL]) {
@@ -210,7 +210,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // view the shortURL edit page
 app.get("/urls/:shortURL", (req, res) => {
   // get shortURL from request body and try to get a valid user id from cookie
-  const [shortURL, user] = [req.params.shortURL, users[req.session.user_id]];
+  const [shortURL, user] = [req.params.shortURL, users[req.session.userId]];
 
   // invalid shortURLs are shown the error page
   if (!urlDatabase[shortURL]) {
@@ -239,7 +239,7 @@ app.get("/urls/:shortURL", (req, res) => {
 // the endpoint to update the shortURL's longURL
 app.post("/urls/:shortURL", (req, res) => {
   // get shortURL, longURL from request body and try to get a valid user id from cookie
-  const [shortURL, longURL, user] = [req.params.shortURL, req.body.longURL, users[req.session.user_id]];
+  const [shortURL, longURL, user] = [req.params.shortURL, req.body.longURL, users[req.session.userId]];
 
   // invalid shortURLs are shown the error page
   if (!urlDatabase[shortURL]) {
@@ -264,7 +264,7 @@ app.post("/urls/:shortURL", (req, res) => {
 // the endpoint to redirect shortURLs to their longURLs
 app.get("/u/:shortURL", (req, res) => {
   // get shortURL from request body and try to get a valid user id from cookie
-  const [shortURL, user] = [req.params.shortURL, users[req.session.user_id]];
+  const [shortURL, user] = [req.params.shortURL, users[req.session.userId]];
 
   // invalid shortURLs are shown the error page
   if (!urlDatabase[shortURL]) {
