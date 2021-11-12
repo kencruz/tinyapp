@@ -4,29 +4,15 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require('bcryptjs');
-const {getUserByEmail} = require('./helpers');
-
-// returns a random 6-digit alphanumeric string
-const generateRandomString = () => {
-  return Math.random().toString(36).substring(2, 8);
-};
-
-// returns urls owned by given user id
-const urlsForUser = (id) => {
-  const urls = {};
-  for (const shortURL in urlDatabase) {
-    // only insert shortURLs if id matches
-    if (urlDatabase[shortURL].userID === id) {
-      urls[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  return urls;
-};
+const {generateRandomString, getUserByEmail, filterUrlByIdGenerator} = require('./helpers');
 
 const urlDatabase = {
   b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
   "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" },
 };
+
+// returns urls owned by given user id
+const urlsForUser = filterUrlByIdGenerator(urlDatabase);
 
 const users = {
   userRandomID: {
