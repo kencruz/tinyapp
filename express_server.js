@@ -65,12 +65,10 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).send("Email and/or password is empty");
-    
+    return res.status(400).render('error', {user: null, error: "Email and/or password is empty"});
   }
   if (getUserByEmail(email, users)) {
-    return res.status(400).send("Email already exists.");
-    
+    return res.status(403).render('error', {user: null, error: "Email already exists."});
   }
   const id = generateRandomString();
   users[id] = {
