@@ -162,19 +162,20 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const [shortURL, user] = [req.params.shortURL, req.session.user_id];
+  const [shortURL, user] = [req.params.shortURL, users[req.session.user_id]];
   if (!urlDatabase[shortURL]) {
-    return res.status(404).send("shortURL not found.");
-    
+    return res.status(404).render("error", {user, error: "shortURL not found."});
   }
-  if (urlDatabase[shortURL].userID !== user) {
-    return res.status(403).send("Unauthorized user to access shortURL page.");
-    
+  if (!user) {
+    return res.status(403).render("error", {user, error: "Can't access shortURL page. User not logged in."});
+  }
+  if (urlDatabase[shortURL].userID !== user.id) {
+    return res.status(403).render("error", {user, error: "Unauthorized user to access shortURL page."});
   }
   const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.session.user_id],
+    user,
+    shortURL,
+    longURL: urlDatabase[shortURL].longURL,
   };
   return res.render("urls_show", templateVars);
 });
