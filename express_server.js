@@ -86,17 +86,14 @@ app.post("/register", (req, res) => {
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).send("Email and/or password is empty");
-    
+    return res.status(400).render('error', {user: null, error: "Email and/or password is empty"});
   }
   const user = getUserByEmail(email, users);
   if (!user) {
-    return res.status(403).send("Email not found.");
-    
+    return res.status(403).render('error', {user, error: "Email not found."});
   }
   if (!bcrypt.compareSync(password, user.password)) {
-    return res.status(403).send("Invalid password.");
-    
+    return res.status(403).render('error', {user, error: "Invalid password."});
   }
   req.session.user_id = user.id;
   return res.redirect("/urls");
