@@ -181,14 +181,15 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  const [shortURL, longURL, user] = [req.params.shortURL, req.body.longURL, req.session.user_id];
+  const [shortURL, longURL, user] = [req.params.shortURL, req.body.longURL, users[req.session.user_id]];
   if (!urlDatabase[shortURL]) {
-    return res.status(404).send("shortURL not found.");
-    
+    return res.status(404).render("error", {user, error: "shortURL not found."});
   }
-  if (urlDatabase[shortURL].userID !== user) {
-    return res.status(403).send("Unauthorized user to access shortURL page.");
-    
+  if (!user) {
+    return res.status(403).render("error", {user, error: "Can't edit shortURL. User not logged in."});
+  }
+  if (urlDatabase[shortURL].userID !== user.id) {
+    return res.status(403).render("error", {user, error: "Unauthorized user to access shortURL page."});
   }
   if (urlDatabase[shortURL]) {
     urlDatabase[shortURL].longURL = longURL;
