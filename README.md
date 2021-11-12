@@ -20,5 +20,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Getting Started
 
+- Clone this repository and enter the directory: `git clone https://github.com/kencruz/tinyapp.git && cd tinyapp`
 - Install all dependencies (using the `npm install` command).
 - Run the development web server using the `node express_server.js` command.
+- In the browser goto the url `localhost:8080`.
