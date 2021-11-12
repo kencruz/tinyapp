@@ -28,4 +28,9 @@ const filterUrlByIdGenerator = (urlDatabase) => {
   };
 };
 
-module.exports = {generateRandomString, getUserByEmail, filterUrlByIdGenerator};
+module.exports = {
+  generateRandomString,
+  getUserByEmail,
+  filterUrlByIdGenerator,
+};
+
