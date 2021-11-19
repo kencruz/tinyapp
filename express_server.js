@@ -4,6 +4,7 @@ const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
+const methodOverride = require('method-override');
 const { users, urlDatabase } = require('./data');
 const {
   generateRandomString,
@@ -24,6 +25,9 @@ app.use(
     keys: ['break this plz', "actually don't, be nice"],
   })
 );
+
+// workaround for HTML to utilize REST methods
+app.use(methodOverride('_method'));
 
 // use ejs templates for the html pages
 app.set('view engine', 'ejs');
@@ -200,7 +204,7 @@ app.get('/urls', (req, res) => {
 });
 
 // the endpoint to delete a shortURL
-app.post('/urls/:shortURL/delete', (req, res) => {
+app.delete('/urls/:shortURL', (req, res) => {
   // get shortURL from request body and try to get a valid user id from cookie
   const [shortURL, user] = [req.params.shortURL, users[req.session.userId]];
 
