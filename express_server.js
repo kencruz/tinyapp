@@ -171,6 +171,7 @@ app.post('/urls', (req, res) => {
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
     userID: user.id,
+    visits: 0,
   };
 
   // redirect to the new shortURL page
@@ -272,11 +273,13 @@ app.get('/urls/:shortURL', (req, res) => {
       });
   }
 
+  const {longURL, visits} = urlDatabase[shortURL];
   // show authenticated user the rendered page with url data
   const templateVars = {
     user,
     shortURL,
-    longURL: urlDatabase[shortURL].longURL,
+    longURL,
+    visits,
   };
   return res.render('urls_show', templateVars);
 });
@@ -336,6 +339,8 @@ app.get('/u/:shortURL', (req, res) => {
 
   // once successfully validated, redirect to longURL
   const longURL = urlDatabase[shortURL].longURL;
+  // increment visitor counter
+  urlDatabase[shortURL].visits++;
   return res.redirect(longURL);
 });
 
