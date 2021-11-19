@@ -286,7 +286,7 @@ app.get('/urls/:shortURL', (req, res) => {
 });
 
 // the endpoint to update the shortURL's longURL
-app.post('/urls/:shortURL', (req, res) => {
+app.put('/urls/:shortURL', (req, res) => {
   // get shortURL, longURL from request body and try to get a valid user id from cookie
   const [shortURL, longURL, user] = [
     req.params.shortURL,
