@@ -26,6 +26,22 @@
         <p class="card-text">
           <%= totalVisitorCount %> total visits
         </p>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Timestamp</th>
+              <th scope="col">Visitor Id</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for(let entry of trackingLog) { %>
+            <tr>
+              <td><%= entry["timestamp"] %></td>
+              <td><%= entry["visitorId"] %></td>
+            </tr>
+            <% } %>
+          </tbody>
+        </table>
       </div>
       <div class="card-footer text-muted">
         <h5 class="card-title">Edit</h5>

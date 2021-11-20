@@ -172,6 +172,7 @@ app.post('/urls', (req, res) => {
     longURL: req.body.longURL,
     userID: user.id,
     visitors: {},
+    trackingLog: [],
   };
 
   // redirect to the new shortURL page
@@ -273,7 +274,7 @@ app.get('/urls/:shortURL', (req, res) => {
       });
   }
 
-  const {longURL, visitors} = urlDatabase[shortURL];
+  const {longURL, visitors, trackingLog} = urlDatabase[shortURL];
 
   const uniqueVisitorCount = Object.keys(visitors).length;
   const totalVisitorCount = Object.keys(visitors).reduce((acc, key) => acc + visitors[key], 0);
@@ -285,6 +286,7 @@ app.get('/urls/:shortURL', (req, res) => {
     longURL,
     uniqueVisitorCount,
     totalVisitorCount,
+    trackingLog,
   };
   return res.render('urls_show', templateVars);
 });
@@ -355,6 +357,8 @@ app.get('/u/:shortURL', (req, res) => {
     urlDatabase[shortURL].visitors[visitorId] = 0;
   }
   urlDatabase[shortURL].visitors[visitorId]++;
+  // Track the visit
+  urlDatabase[shortURL].trackingLog.push({timestamp: new Date(), visitorId});
   return res.redirect(longURL);
 });
 
