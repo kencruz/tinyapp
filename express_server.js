@@ -175,6 +175,8 @@ app.post('/urls', (req, res) => {
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
     userID: user.id,
+    visitors: {},
+    trackingLog: [],
   };
 
   // redirect to the new shortURL page
@@ -276,11 +278,19 @@ app.get('/urls/:shortURL', (req, res) => {
       });
   }
 
+  const {longURL, visitors, trackingLog} = urlDatabase[shortURL];
+
+  const uniqueVisitorCount = Object.keys(visitors).length;
+  const totalVisitorCount = Object.keys(visitors).reduce((acc, key) => acc + visitors[key], 0);
+
   // show authenticated user the rendered page with url data
   const templateVars = {
     user,
     shortURL,
-    longURL: urlDatabase[shortURL].longURL,
+    longURL,
+    uniqueVisitorCount,
+    totalVisitorCount,
+    trackingLog,
   };
   return res.render('urls_show', templateVars);
 });
@@ -338,8 +348,21 @@ app.get('/u/:shortURL', (req, res) => {
       .render('error', { user, error: 'Short link not found' });
   }
 
+  // if no visitorId, create one
+  if (!req.session.visitorId) {
+    req.session.visitorId = generateRandomString();
+  }
+  const visitorId = req.session.visitorId;
+
   // once successfully validated, redirect to longURL
   const longURL = urlDatabase[shortURL].longURL;
+  // increment visitor counters
+  if (!urlDatabase[shortURL].visitors[visitorId]) {
+    urlDatabase[shortURL].visitors[visitorId] = 0;
+  }
+  urlDatabase[shortURL].visitors[visitorId]++;
+  // Track the visit
+  urlDatabase[shortURL].trackingLog.push({timestamp: new Date(), visitorId});
   return res.redirect(longURL);
 });
 
