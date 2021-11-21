@@ -1,16 +1,13 @@
 const { users, urlDatabase } = require('../data');
 const {
   generateRandomString,
-  getUserByEmail,
-  filterUrlByIdGenerator,
 } = require('../helpers');
 // returns urls owned by given user id
-const urlsForUser = filterUrlByIdGenerator(urlDatabase);
 const { Router } = require('express');
 const routes = Router();
-const bcrypt = require('bcryptjs');
 
 const userController = require("./userController");
+const urlController = require("./urlController");
 
 // at the root path redirect to /urls if logged in, else go to login page
 routes.get('/', (req, res) => {
@@ -36,200 +33,22 @@ routes.get('/login', userController.getLoginPage);
 routes.post('/logout', userController.logoutUser);
 
 // the endpoint to view the form to create a new shortURL
-routes.get('/urls/new', (req, res) => {
-  // try to get a valid user id from cookie
-  const user = users[req.session.userId];
-
-  // unauthenticated users are redirected to /login
-  if (!user) {
-    return res.redirect('/login');
-  }
-
-  // authenticated users are shown the page to make new shortURLs
-  const templateVars = { user };
-  return res.render('urls_new', templateVars);
-});
+routes.get('/urls/new', urlController.getShortURLForm);
 
 // the endpoint to create a new shortURL
-routes.post('/urls', (req, res) => {
-  // try to get a valid user id from cookie
-  const user = users[req.session.userId];
-
-  // unauthenticated users are shown the error page
-  if (!user) {
-    return res
-      .status(403)
-      .render('error', {
-        user,
-        error: "Unauthorized user can't add a url link.",
-      });
-  }
-
-  // authenticated users will generate a new shortURL for their longURL and saved to database
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = {
-    longURL: req.body.longURL,
-    userID: user.id,
-    visitors: {},
-    trackingLog: [],
-  };
-
-  // redirect to the new shortURL page
-  return res.redirect(`/urls/${shortURL}`);
-});
+routes.post('/urls', urlController.createShortUrl);
 
 // show a list of urls owned by user
-routes.get('/urls', (req, res) => {
-  // try to get a valid user id from cookie
-  const user = users[req.session.userId];
-
-  // unauthenticated users are shown the error page
-  if (!user) {
-    return res
-      .status(403)
-      .render('error', { user, error: 'Log in to view url page.' });
-  }
-
-  // build the urls owned by the user
-  const templateVars = {
-    urls: urlsForUser(user.id),
-    user: user,
-  };
-
-  // render the url list with the user data
-  return res.render('urls_index', templateVars);
-});
+routes.get('/urls', urlController.getUrls);
 
 // the endpoint to delete a shortURL
-routes.delete('/urls/:shortURL', (req, res) => {
-  // get shortURL from request body and try to get a valid user id from cookie
-  const [shortURL, user] = [req.params.shortURL, users[req.session.userId]];
-
-  // invalid shortURLs are shown the error page
-  if (!urlDatabase[shortURL]) {
-    return res
-      .status(404)
-      .render('error', { user, error: 'shortURL not found' });
-  }
-
-  // unauthenticated users are shown the error page
-  if (!user) {
-    return res
-      .status(403)
-      .render('error', {
-        user,
-        error: "Can't delete this link. User not logged in.",
-      });
-  }
-
-  // users that don't own the specified url are shown the error page
-  if (urlDatabase[shortURL].userID !== user.id) {
-    return res
-      .status(403)
-      .render('error', {
-        user,
-        error: "Unauthorized user can't delete this link.",
-      });
-  }
-
-  // if authenticated user owns the shortURL, then delete it
-  if (urlDatabase[shortURL]) {
-    delete urlDatabase[shortURL];
-  }
-
-  // go back to the url page
-  return res.redirect('/urls');
-});
+routes.delete('/urls/:shortURL', urlController.deleteUrl);
 
 // view the shortURL edit page
-routes.get('/urls/:shortURL', (req, res) => {
-  // get shortURL from request body and try to get a valid user id from cookie
-  const [shortURL, user] = [req.params.shortURL, users[req.session.userId]];
-
-  // invalid shortURLs are shown the error page
-  if (!urlDatabase[shortURL]) {
-    return res
-      .status(404)
-      .render('error', { user, error: 'shortURL not found.' });
-  }
-
-  // unauthenticated users are shown the error page
-  if (!user) {
-    return res
-      .status(403)
-      .render('error', {
-        user,
-        error: "Can't access shortURL page. User not logged in.",
-      });
-  }
-
-  // users that don't own the specified url are shown the error page
-  if (urlDatabase[shortURL].userID !== user.id) {
-    return res
-      .status(403)
-      .render('error', {
-        user,
-        error: 'Unauthorized user to access shortURL page.',
-      });
-  }
-
-  const {longURL, visitors, trackingLog} = urlDatabase[shortURL];
-
-  const uniqueVisitorCount = Object.keys(visitors).length;
-  const totalVisitorCount = Object.keys(visitors).reduce((acc, key) => acc + visitors[key], 0);
-
-  // show authenticated user the rendered page with url data
-  const templateVars = {
-    user,
-    shortURL,
-    longURL,
-    uniqueVisitorCount,
-    totalVisitorCount,
-    trackingLog,
-  };
-  return res.render('urls_show', templateVars);
-});
+routes.get('/urls/:shortURL', urlController.getShortURLEditPage);
 
 // the endpoint to update the shortURL's longURL
-routes.put('/urls/:shortURL', (req, res) => {
-  // get shortURL, longURL from request body and try to get a valid user id from cookie
-  const [shortURL, longURL, user] = [
-    req.params.shortURL,
-    req.body.longURL,
-    users[req.session.userId],
-  ];
-
-  // invalid shortURLs are shown the error page
-  if (!urlDatabase[shortURL]) {
-    return res
-      .status(404)
-      .render('error', { user, error: 'shortURL not found.' });
-  }
-
-  // unauthenticated users are shown the error page
-  if (!user) {
-    return res
-      .status(403)
-      .render('error', {
-        user,
-        error: "Can't edit shortURL. User not logged in.",
-      });
-  }
-
-  // users that don't own the specified url are shown the error page
-  if (urlDatabase[shortURL].userID !== user.id) {
-    return res
-      .status(403)
-      .render('error', {
-        user,
-        error: 'Unauthorized user to access shortURL page.',
-      });
-  }
-
-  // update shortURL with new longURL and show the user's url page
-  urlDatabase[shortURL].longURL = longURL;
-  return res.redirect(`/urls/`);
-});
+routes.put('/urls/:shortURL', urlController.updateShortUrl);
 
 // the endpoint to redirect shortURLs to their longURLs
 routes.get('/u/:shortURL', (req, res) => {
