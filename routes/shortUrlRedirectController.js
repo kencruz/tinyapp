@@ -32,6 +32,6 @@ const redirectShortUrl = (req, res) => {
   return res.redirect(longURL);
 };
 
-module.export = {
+module.exports = {
   redirectShortUrl
 };
